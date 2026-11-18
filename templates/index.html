@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money-Transaction Security Blockchain</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background:#f9f9f9; font-family:Arial,sans-serif; color:#34495e; }
+        h1 { font-size:40px; font-weight:bold; color:#2c3e50; text-align:center; margin-bottom:40px; }
+        .container { margin-top:50px; max-width:900px; }
+        .card { border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,.1); margin-bottom:30px; }
+        .card-header { background:#3498db; color:#fff; font-size:24px; border-radius:15px 15px 0 0 !important; padding:20px; }
+        .block-item { background:#ecf0f1; padding:15px; margin-bottom:10px; border-radius:8px; word-break:break-all; }
+        .btn-custom { width:100%; padding:12px; background:#3498db; color:#fff; border:none; border-radius:8px; }
+        .btn-custom:hover { background:#2980b9; color:#fff; }
+        .mine-button { width:100%; padding:12px; background:#2ecc71; color:#fff; border:none; border-radius:8px; }
+        .mine-button:hover { background:#27ae60; color:#fff; }
+        @media (max-width:768px) { h1 { font-size:28px; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Money-Transaction Security Blockchain</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <div class="card">
+        <div class="card-header">
+            Blockchain
+            {% if valid %}
+                <span class="badge bg-success float-end fs-6">Chain valid ✔</span>
+            {% else %}
+                <span class="badge bg-danger float-end fs-6">Chain tampered ✘</span>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% for block in blockchain.chain|reverse %}
+                <div class="block-item">
+                    <strong>Block #{{ block.index }}</strong><br>
+                    <strong>Transactions:</strong>
+                    {% if block.transactions %}
+                        <ul class="mb-1">
+                        {% for t in block.transactions %}
+                            <li>{{ t.sender }} → {{ t.receiver }}: {{ "%.2f"|format(t.amount) }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        Genesis Block<br>
+                    {% endif %}
+                    <strong>Nonce:</strong> {{ block.nonce }}<br>
+                    <strong>Hash:</strong> {{ block.hash }}<br>
+                    <strong>Previous Hash:</strong> {{ block.previous_hash }}<br>
+                    <strong>Timestamp:</strong> {{ block.timestamp }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Add a Transaction</div>
+        <div class="card-body">
+            <form action="{{ url_for('add_transaction') }}" method="POST">
+                <div class="mb-3"><label class="fw-bold" for="sender">Sender:</label>
+                    <input type="text" id="sender" name="sender" class="form-control" required></div>
+                <div class="mb-3"><label class="fw-bold" for="receiver">Receiver:</label>
+                    <input type="text" id="receiver" name="receiver" class="form-control" required></div>
+                <div class="mb-3"><label class="fw-bold" for="amount">Amount:</label>
+                    <input type="number" id="amount" name="amount" class="form-control" step="0.01" min="0.01" required></div>
+                <button type="submit" class="btn btn-custom">Add Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Mine a Block ({{ blockchain.pending_transactions|length }} pending)</div>
+        <div class="card-body">
+            {% if blockchain.pending_transactions %}
+                <ul>
+                {% for t in blockchain.pending_transactions %}
+                    <li>{{ t.sender }} → {{ t.receiver }}: {{ "%.2f"|format(t.amount) }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            <form action="{{ url_for('mine_block') }}" method="POST">
+                <button type="submit" class="btn mine-button">Mine Block</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
